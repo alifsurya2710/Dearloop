@@ -8,7 +8,19 @@ type PatternDef = {
   patternChildren?: React.ReactNode;
 };
 
-function getPatternDef(id: CassettePattern): PatternDef {
+function getPatternDef(id: CassettePattern, customPattern?: string): PatternDef {
+  if (id === "custom" && customPattern) {
+    const pid = "pat-custom";
+    return {
+      bg: `url(#${pid})`,
+      patternChildren: (
+        <pattern id={pid} patternUnits="userSpaceOnUse" width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+          <image href={customPattern} x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" />
+        </pattern>
+      ),
+    };
+  }
+
   const pid = `pat-${id}`;
   switch (id) {
     case "putih-polos":
@@ -232,13 +244,14 @@ function getStickerEmojis(stickers: string[]): string[] {
 
 // ─── CassetteSVG ─────────────────────────────────────────────────────────────
 interface CassetteSVGProps {
-  pattern: CassettePattern;
+  pattern: CassettePattern | string;
+  customPattern?: string;
   stickers: string[];
   size?: number;
 }
 
-export function CassetteSVG({ pattern, stickers, size = 340 }: CassetteSVGProps) {
-  const p = getPatternDef(pattern);
+export function CassetteSVG({ pattern, customPattern, stickers, size = 340 }: CassetteSVGProps) {
+  const p = getPatternDef(pattern as CassettePattern, customPattern);
   const W = 340;
   const H = 210;
   const scale = size / W;
@@ -349,8 +362,9 @@ export function CassetteSVG({ pattern, stickers, size = 340 }: CassetteSVGProps)
 }
 
 // ─── CassetteCase ─────────────────────────────────────────────────────────────
-export function CassetteCase({ pattern, stickers, songTitles = [], size = 300 }: {
-  pattern?: CassettePattern;
+export function CassetteCase({ pattern, customPattern, stickers, songTitles = [], size = 300 }: {
+  pattern?: CassettePattern | string;
+  customPattern?: string;
   stickers: string[];
   songTitles?: string[];
   size?: number;
@@ -359,7 +373,7 @@ export function CassetteCase({ pattern, stickers, songTitles = [], size = 300 }:
   const H = 190;
   const scale = size / W;
   const emojis = getStickerEmojis(stickers);
-  const p = pattern ? getPatternDef(pattern) : null;
+  const p = pattern ? getPatternDef(pattern as CassettePattern, customPattern) : null;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width={W * scale} height={H * scale}

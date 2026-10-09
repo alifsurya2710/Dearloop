@@ -51,10 +51,17 @@ export default function Listen() {
         cacheBust: true,
         pixelRatio: 3,
         quality: 1,
+        fontEmbedCSS: "",
+        filter: (node) => {
+          if (node.tagName === "LINK" && (node as HTMLLinkElement).rel === "stylesheet") {
+            return false;
+          }
+          return true;
+        },
         style: {
           padding: "24px",
           borderRadius: "24px",
-          background: getBgValue(tape.bgColor),
+          background: tape.customBg ? `url(${tape.customBg}) center/cover no-repeat` : getBgValue(tape.bgColor),
         },
       });
 
@@ -70,11 +77,22 @@ export default function Listen() {
     }
   }
 
-  // Derive the background colour as soon as tape is available (client-only, no hydration mismatch)
-  const bgValue = tape ? getBgValue(tape.bgColor) : undefined;
+  // Derive the background style as soon as tape is available
+  const bgStyle = tape
+    ? tape.customBg
+      ? {
+          backgroundImage: `url(${tape.customBg})`,
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center center",
+          backgroundAttachment: "fixed",
+          transition: "background 0.4s ease",
+        }
+      : { background: getBgValue(tape.bgColor), transition: "background 0.4s ease" }
+    : undefined;
 
   return (
-    <div style={{ minHeight: "100dvh", background: bgValue, transition: "background 0.4s ease" }}>
+    <div style={{ minHeight: "100dvh", ...bgStyle }}>
       <Header />
       <main className="listen-main">
         {error ? (

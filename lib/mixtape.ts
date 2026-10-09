@@ -12,7 +12,8 @@ export const BG_COLORS: { id: string; label: string; value: string }[] = [
   { id: "moss",       label: "Lumut",      value: "#b8c4a8" },
 ];
 
-export function getBgValue(id: string): string {
+export function getBgValue(id: string, customBg?: string): string {
+  if (customBg) return customBg;
   return BG_COLORS.find(c => c.id === id)?.value ?? "#f0e8d8";
 }
 
@@ -23,7 +24,7 @@ export const CASSETTE_PATTERNS = [
   "hijau-tua", "hijau-bunga", "kotak-hijau", "bunga-kecil",
   "hati", "plaid-hijau",
 ] as const;
-export type CassettePattern = typeof CASSETTE_PATTERNS[number];
+export type CassettePattern = typeof CASSETTE_PATTERNS[number] | "custom";
 
 export const STICKER_CATEGORIES = ["musim gugur", "bintang", "bunga", "pita", "makanan", "alam", "vintage", "cinta"] as const;
 export type StickerCategory = typeof STICKER_CATEGORIES[number];
@@ -157,13 +158,15 @@ export const mixtapeSchema = z.object({
   title: z.string().min(1).max(60),
   from: z.string().min(1).max(40),
   to: z.string().min(1).max(40),
-  pattern: z.enum(CASSETTE_PATTERNS).default("putih-polos"),
+  pattern: z.string().default("putih-polos"),
+  customPattern: z.string().optional(),
   stickers: z.array(z.string()).max(3).default([]),
   stickerPositions: z.array(z.object({ x: z.number(), y: z.number() })).max(3).default([]),
   note: z.string().max(1200),
   photo: z.string().optional(),
   tracks: z.array(trackSchema).max(4),
   bgColor: z.string().max(20).default("krem"),
+  customBg: z.string().optional(),
 });
 
 export type Mixtape = z.infer<typeof mixtapeSchema>;
@@ -173,12 +176,14 @@ export const initialMixtape: Mixtape = {
   from: "Aku",
   to: "Kamu",
   pattern: "putih-polos",
+  customPattern: undefined,
   stickers: [],
   stickerPositions: [],
   note: "Ada hal-hal yang sulit diucapkan. Jadi biarkan lagu-lagu ini yang berbicara. ♡",
   photo: undefined,
   tracks: [],
   bgColor: "krem",
+  customBg: undefined,
 };
 
 export function encodeMixtape(tape: Mixtape) {
@@ -187,7 +192,7 @@ export function encodeMixtape(tape: Mixtape) {
 }
 
 export function decodeMixtape(value: string): Mixtape {
-  if (value.length > 60000) throw new Error("Tautan terlalu panjang.");
+  if (value.length > 3000000) throw new Error("Tautan terlalu panjang.");
   const bytes = Uint8Array.from(atob(value), c => c.charCodeAt(0));
   return mixtapeSchema.parse(JSON.parse(new TextDecoder().decode(bytes)));
 }

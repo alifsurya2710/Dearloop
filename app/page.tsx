@@ -1,11 +1,11 @@
 "use client";
 import { useState, useRef } from "react";
-import { Check, X, Copy, ExternalLink, Loader2, Camera, Upload, Image as ImageIcon, Coffee, Download } from "lucide-react";
+import { Check, X, Copy, ExternalLink, Loader2, Camera, Upload, Image as ImageIcon, Coffee, Download, Heart } from "lucide-react";
 import { toPng } from "html-to-image";
 import { CassetteSVG, CassetteCase, Notecard, PolaroidCard } from "@/components/cassette";
 import { MusicPlayer } from "@/components/MusicPlayer";
 import { DonationModal } from "@/components/DonationModal";
-import { processSelfieImage } from "@/lib/photo";
+import { processSelfieImage, processCustomPatternImage } from "@/lib/photo";
 import {
   initialMixtape, encodeMixtape, trackSchema,
   CASSETTE_PATTERNS, ALL_STICKERS, STICKER_CATEGORIES,
@@ -35,6 +35,7 @@ const PATTERN_COLORS: Record<CassettePattern, string> = {
   "bunga-kecil":     "#f0ece0",
   "hati":            "#fff0f0",
   "plaid-hijau":     "#d8e8d0",
+  "custom":          "#ffffff",
 };
 const PATTERN_ICONS: Record<CassettePattern, string> = {
   "putih-polos": "○", "kuning-bunga": "✿", "merah-kotak": "⊞",
@@ -43,6 +44,7 @@ const PATTERN_ICONS: Record<CassettePattern, string> = {
   "kotak-putih": "⊟", "titik-putih": "·", "abu-langit": "·",
   "hijau-tua": "·", "hijau-bunga": "✿", "kotak-hijau": "▦",
   "bunga-kecil": "✾", "hati": "♥", "plaid-hijau": "⊠",
+  "custom": "🖼",
 };
 
 // ─── Step dots ───────────────────────────────────────────────────────────────
@@ -78,13 +80,54 @@ function StepPattern({ tape, update }: {
   tape: Mixtape;
   update: (k: keyof Mixtape, v: Mixtape[keyof Mixtape]) => void;
 }) {
+  const patternFileRef = useRef<HTMLInputElement>(null);
+  const bgFileRef = useRef<HTMLInputElement>(null);
+
+  async function handleCustomPatternUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const base64 = await processCustomPatternImage(file, 500);
+      update("customPattern", base64);
+      update("pattern", "custom");
+    } catch {
+      alert("Gagal memproses gambar motif.");
+    }
+  }
+
+  async function handleCustomBgUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const base64 = await processCustomPatternImage(file, 600);
+      update("customBg", base64);
+    } catch {
+      alert("Gagal memproses gambar latar.");
+    }
+  }
+
   return (
     <div className="step-content">
       <h2 className="step-heading">PILIH MOTIF KASET</h2>
       <div className="cassette-preview-center">
-        <CassetteSVG pattern={tape.pattern} stickers={tape.stickers} size={300} />
+        <CassetteSVG pattern={tape.pattern} customPattern={tape.customPattern} stickers={tape.stickers} size={300} />
       </div>
       <div className="pattern-grid">
+        {/* Custom Pattern Upload Button */}
+        <button
+          className={`pattern-swatch custom-upload-swatch${tape.pattern === "custom" ? " selected" : ""}`}
+          onClick={() => patternFileRef.current?.click()}
+          title="Unggah Foto Motif Custom"
+          aria-label="Unggah Motif Foto"
+          style={tape.customPattern ? { backgroundImage: `url(${tape.customPattern})`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "#ffffff", border: "2px dashed #999" }}
+        >
+          {!tape.customPattern && <Upload size={14} color="#666" />}
+          {tape.pattern === "custom" && (
+            <span className="swatch-check"><Check size={9} strokeWidth={3} /></span>
+          )}
+        </button>
+        <input type="file" ref={patternFileRef} accept="image/*" style={{ display: "none" }} onChange={handleCustomPatternUpload} />
+
         {CASSETTE_PATTERNS.map(pat => (
           <button
             key={pat}
@@ -106,24 +149,47 @@ function StepPattern({ tape, update }: {
           </button>
         ))}
       </div>
+      {tape.customPattern && (
+        <p className="sticker-placed-info" style={{ marginTop: "-8px" }}>
+          Foto motif kaset kustom aktif · <button onClick={() => { update("customPattern", undefined); update("pattern", "putih-polos"); }} style={{ textDecoration: "underline", color: "#666" }}>Hapus foto</button>
+        </p>
+      )}
 
-      {/* Background color picker - syncs to tape.bgColor so it's included in share URL */}
+      {/* Background color picker */}
       <div className="bg-picker">
-        <p className="bg-picker-label">WARNA LATAR</p>
+        <p className="bg-picker-label">WARNA / FOTO LATAR</p>
         <div className="bg-swatches">
+          {/* Custom Background Photo Swatch */}
+          <button
+            className={`bg-swatch custom-upload-swatch${tape.customBg ? " selected" : ""}`}
+            style={tape.customBg ? { backgroundImage: `url(${tape.customBg})`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "#ffffff", border: "2px dashed #999" }}
+            onClick={() => bgFileRef.current?.click()}
+            title="Unggah Foto Latar Belakang"
+            aria-label="Unggah Foto Latar"
+          >
+            {!tape.customBg && <Upload size={11} color="#666" />}
+            {tape.customBg && <Check size={11} strokeWidth={3} color="#fff" />}
+          </button>
+          <input type="file" ref={bgFileRef} accept="image/*" style={{ display: "none" }} onChange={handleCustomBgUpload} />
+
           {BG_COLORS.map(c => (
             <button
               key={c.id}
-              className={`bg-swatch${tape.bgColor === c.id ? " selected" : ""}`}
+              className={`bg-swatch${tape.bgColor === c.id && !tape.customBg ? " selected" : ""}`}
               style={{ background: c.value }}
-              onClick={() => update("bgColor", c.id)}
+              onClick={() => { update("customBg", undefined); update("bgColor", c.id); }}
               title={c.label}
               aria-label={c.label}
             >
-              {tape.bgColor === c.id && <Check size={11} strokeWidth={3} color="#333" />}
+              {tape.bgColor === c.id && !tape.customBg && <Check size={11} strokeWidth={3} color="#333" />}
             </button>
           ))}
         </div>
+        {tape.customBg && (
+          <p className="sticker-placed-info" style={{ marginTop: "6px", textAlign: "left" }}>
+            Foto latar kustom aktif · <button onClick={() => update("customBg", undefined)} style={{ textDecoration: "underline", color: "#666" }}>Hapus foto latar</button>
+          </p>
+        )}
       </div>
     </div>
   );
@@ -246,7 +312,7 @@ function StepStickers({ tape, update }: {
         onTouchEnd={stopDrag}
       >
         {/* Case background (static SVG with motif pattern) */}
-        <CassetteCase pattern={tape.pattern} stickers={[]} songTitles={[]} size={300} />
+        <CassetteCase pattern={tape.pattern} customPattern={tape.customPattern} stickers={[]} songTitles={[]} size={300} />
 
         {/* Draggable sticker overlays */}
         {stickers.map((id, i) => {
@@ -405,7 +471,7 @@ function StepSongs({ tape, update }: {
 
       {/* Case preview with song titles on label */}
       <div className="case-preview-center">
-        <CassetteCase pattern={tape.pattern} stickers={tape.stickers} songTitles={songTitles} size={300} />
+        <CassetteCase pattern={tape.pattern} customPattern={tape.customPattern} stickers={tape.stickers} songTitles={songTitles} size={300} />
       </div>
 
       {/* Song cards list */}
@@ -474,10 +540,10 @@ function StepSongs({ tape, update }: {
 
       {err && <p className="song-error">{err}</p>}
 
-      <p className={`min-songs-hint${tape.tracks.length >= 2 ? " met" : ""}`}>
-        {tape.tracks.length >= 2
+      <p className={`min-songs-hint${tape.tracks.length >= 1 ? " met" : ""}`}>
+        {tape.tracks.length >= 1
           ? `✓ ${tape.tracks.length} lagu ditambahkan`
-          : `Minimal 2 lagu diperlukan · ${tape.tracks.length}/2`}
+          : `Minimal 1 lagu diperlukan · ${tape.tracks.length}/1`}
       </p>
     </div>
   );
@@ -549,7 +615,7 @@ function StepMessage({ tape, update, share, onGenerate, onCopy, copied }: {
 
       {/* Cassette Case Preview */}
       <div className="case-preview-center">
-        <CassetteCase pattern={tape.pattern} stickers={tape.stickers} songTitles={tape.tracks.map(t => t.title)} size={300} />
+        <CassetteCase pattern={tape.pattern} customPattern={tape.customPattern} stickers={tape.stickers} songTitles={tape.tracks.map(t => t.title)} size={300} />
       </div>
 
       {/* Note paper & Selfie Polaroid preview */}
@@ -665,17 +731,24 @@ function StepShare({ tape, share, onCopy, copied, onReset }: {
     if (!previewRef.current || isDownloading) return;
     try {
       setIsDownloading(true);
-      // Generate HD PNG image with pixelRatio: 3
+      // Generate HD PNG image with pixelRatio: 3, bypassing cross-origin font cssRules inspection
       const dataUrl = await toPng(previewRef.current, {
         cacheBust: true,
         pixelRatio: 3,
         quality: 1,
+        fontEmbedCSS: "",
+        filter: (node) => {
+          if (node.tagName === "LINK" && (node as HTMLLinkElement).rel === "stylesheet") {
+            return false;
+          }
+          return true;
+        },
         style: {
           transform: "scale(1)",
           transformOrigin: "top left",
           padding: "24px",
           borderRadius: "24px",
-          background: getBgValue(tape.bgColor),
+          background: tape.customBg ? `url(${tape.customBg}) center/cover no-repeat` : getBgValue(tape.bgColor),
         },
       });
 
@@ -696,49 +769,99 @@ function StepShare({ tape, share, onCopy, copied, onReset }: {
       <h2 className="step-heading">SHARE YOUR MIXTAPE</h2>
 
       <div className="share-result-container">
-        {/* Clean layout: Note card & Polaroid photo side-by-side, Cassette Case below */}
-        <div className="result-preview-stage" ref={previewRef}>
-          <div className="result-notes-row">
-            <Notecard message={tape.note || "Untukmu ♡"} />
-            {tape.photo && (
-              <PolaroidCard photo={tape.photo} caption={`Dari ${tape.from} ♡`} />
-            )}
+        {/* Complete Mixtape Card Download Target (matching user screenshot) */}
+        <div className="result-preview-stage" ref={previewRef} style={{ display: "flex", flexDirection: "column", gap: "24px", width: "100%", maxWidth: "480px", margin: "0 auto", padding: "36px 24px 44px", borderRadius: "28px" }}>
+          {/* Header Tag */}
+          <div style={{ textAlign: "center", marginBottom: "4px" }}>
+            <p className="listen-tag" style={{ margin: 0, fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, color: "rgba(0,0,0,0.6)" }}>
+              <Heart size={11} className="inline mr-1" /> SEBUAH HADIAH KECIL UNTUK {tape.to.toUpperCase()}
+            </p>
           </div>
-          <div className="result-cassette-box">
-            <CassetteCase
-              pattern={tape.pattern}
-              stickers={tape.stickers}
-              songTitles={tape.tracks.map(t => t.title)}
-              size={300}
-            />
+
+          {/* Double Cassette Feature Container (Fixed height box preventing any overlap) */}
+          <div style={{ width: "100%", height: "230px", display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
+            <div className="listen-cassettes" style={{ filter: "drop-shadow(0 12px 28px rgba(0,0,0,0.18))" }}>
+              <div className="listen-cassette-back">
+                <CassetteCase pattern={tape.pattern} customPattern={tape.customPattern} stickers={tape.stickers} songTitles={tape.tracks.map(t => t.title)} size={220} />
+              </div>
+              <div className="listen-cassette-front">
+                <CassetteSVG pattern={tape.pattern} customPattern={tape.customPattern} stickers={tape.stickers} size={240} />
+              </div>
+            </div>
+          </div>
+
+          {/* Title & Byline Block (Explicit spacing, crisp typography) */}
+          <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: "6px", width: "100%", padding: "8px 0 4px" }}>
+            <h1 className="listen-title" style={{ fontSize: "28px", fontWeight: 800, margin: 0, letterSpacing: "-0.5px", lineHeight: "1.35", color: "#1a1a1a" }}>{tape.title}</h1>
+            <p className="listen-byline" style={{ fontSize: "13.5px", color: "rgba(0,0,0,0.6)", margin: 0, fontWeight: 500 }}>
+              Untuk {tape.to} &nbsp;·&nbsp; dari {tape.from}
+            </p>
+          </div>
+
+          {/* Note Card & Polaroid Row */}
+          <div className="listen-content" style={{ borderRadius: "22px", padding: "24px", boxShadow: "0 8px 24px rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.04)" }}>
+            <div className="note-photo-row" style={{ margin: 0, gap: "20px", alignItems: "flex-start" }}>
+              <div className="listen-note-block" style={{ flex: "1 1 200px", display: "flex", flexDirection: "column", gap: "10px", minWidth: 0 }}>
+                <p className="listen-eyebrow" style={{ fontSize: "9.5px", letterSpacing: "1.5px", margin: 0, color: "#888" }}>
+                  <Heart size={11} className="inline mr-1" /> CATATAN UNTUK {tape.to.toUpperCase()}
+                </p>
+                <p className="listen-note-text" style={{ fontSize: "20px", margin: 0, lineHeight: "1.45", color: "#1a1a1a" }}>{tape.note || "Untukmu ♡"}</p>
+                <div style={{ marginTop: "4px" }}>
+                  <p className="listen-from" style={{ margin: 0, fontSize: "13px", color: "#666", fontWeight: 500 }}>Dengan sayang, {tape.from}</p>
+                </div>
+              </div>
+
+              {tape.photo && (
+                <PolaroidCard photo={tape.photo} caption={`Dari ${tape.from} ♡`} />
+              )}
+            </div>
+          </div>
+
+          {/* Music Player & Tracklist Card */}
+          <div className="listen-content" style={{ borderRadius: "22px", padding: "24px", boxShadow: "0 8px 24px rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.04)" }}>
+            <MusicPlayer tracks={tape.tracks} />
+
+            <h2 className="listen-songs-heading" style={{ marginTop: "20px" }}>{tape.title}</h2>
+            <div className="listen-songs">
+              {tape.tracks.map((track, i) => (
+                <div className="listen-track" key={i}>
+                  <span className="listen-track-num">{String(i + 1).padStart(2, "0")}</span>
+                  <div className="listen-track-info">
+                    <strong>{track.title}</strong>
+                    {track.artist && <small>{track.artist}</small>}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-
-        {/* Music Player Widget */}
-        <MusicPlayer tracks={tape.tracks} />
 
         {/* Share Link Input + Action Buttons */}
         <div className="share-section">
           <label className="share-section-label">Share this mixtape:</label>
-          <div className="share-input-row">
-            <input
-              className="share-url-input"
-              readOnly
-              value={share}
-              onFocus={e => e.target.select()}
-            />
-            <button className="btn-share-copy" onClick={onCopy}>
-              <Copy size={14} />
-              {copied ? "Tersalin!" : "Copy"}
-            </button>
-            <button className="btn-share-download" onClick={downloadHDImage} disabled={isDownloading}>
-              {isDownloading ? <Loader2 size={14} className="spin" /> : <Download size={14} />}
-              {isDownloading ? "Mengunduh..." : "Unduh HD"}
-            </button>
-            <button className="btn-share-donate" onClick={() => setDonateOpen(true)}>
-              <Coffee size={14} />
-              Donasi
-            </button>
+          <div className="share-input-row" style={{ flexDirection: "column", gap: "10px" }}>
+            <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+              <input
+                className="share-url-input"
+                readOnly
+                value={share}
+                onFocus={e => e.target.select()}
+              />
+              <button className="btn-share-copy" onClick={onCopy}>
+                <Copy size={14} />
+                {copied ? "Tersalin!" : "Copy"}
+              </button>
+            </div>
+            <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+              <button className="btn-share-download" onClick={downloadHDImage} disabled={isDownloading} style={{ flex: 1 }}>
+                {isDownloading ? <Loader2 size={14} className="spin" /> : <Download size={14} />}
+                {isDownloading ? "Mengunduh..." : "Unduh Gambar (HD)"}
+              </button>
+              <button className="btn-share-donate" onClick={() => setDonateOpen(true)}>
+                <Coffee size={14} />
+                Donasi
+              </button>
+            </div>
           </div>
         </div>
 
@@ -771,8 +894,8 @@ export default function Home() {
   }
 
   function goNext() {
-    if (step === 2 && tape.tracks.length < 2) {
-      setError("Tambahkan minimal 2 lagu sebelum melanjutkan."); return;
+    if (step === 2 && tape.tracks.length < 1) {
+      setError("Tambahkan minimal 1 lagu sebelum melanjutkan."); return;
     }
     if (step === 3) {
       if (!tape.title.trim() || !tape.from.trim() || !tape.to.trim()) {
@@ -809,12 +932,21 @@ export default function Home() {
   }
 
   const nextLabels = ["Lanjut", "Lanjut", "Lanjut", "✨ Buat Tautan"];
-  const bg = getBgValue(tape.bgColor);
+  const bgStyle = tape.customBg
+    ? {
+        backgroundImage: `url(${tape.customBg})`,
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center center",
+        backgroundAttachment: "fixed",
+        transition: "background 0.4s ease",
+      }
+    : { background: getBgValue(tape.bgColor), transition: "background 0.4s ease" };
 
   // ── Landing ───────────────────────────────────────────────────────────────
   if (!started) {
     return (
-      <div className="landing" style={{ background: bg }}>
+      <div className="landing" style={{ background: getBgValue(tape.bgColor) }}>
         <div className="landing-hero">
           <div className="landing-logo-wrap">
             <img src="/logo.png" alt="Dearloop" className="landing-logo-img" />
@@ -849,7 +981,7 @@ export default function Home() {
 
   // ── Wizard ────────────────────────────────────────────────────────────────
   return (
-    <div className="wizard" style={{ background: bg, transition: "background 0.4s ease" }}>
+    <div className="wizard" style={bgStyle}>
       <button className="wizard-logo" onClick={() => { setStarted(false); setStep(0); }}>
         <img src="/logo.png" alt="Dearloop" className="wizard-logo-img" />
       </button>

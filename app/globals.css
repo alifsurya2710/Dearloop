@@ -285,6 +285,24 @@
   box-shadow: 0 0 0 2px white, 0 0 0 4px #1a1a1a;
   transform: scale(1.1);
 }
+.pattern-swatch.custom-upload-swatch {
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+.pattern-swatch.custom-upload-swatch:hover {
+  border-color: #1a1a1a;
+  transform: scale(1.12);
+}
+.bg-swatch.custom-upload-swatch {
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+.bg-swatch.custom-upload-swatch:hover {
+  border-color: #1a1a1a;
+  transform: scale(1.12);
+}
 .swatch-check {
   position: absolute;
   bottom: -4px;
@@ -1458,17 +1476,46 @@
   color: #ffffff;
   font-weight: 700;
   font-size: 13px;
-  padding: 10px 20px;
+  padding: 10px 16px;
   border-radius: 12px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   flex-shrink: 0;
+  white-space: nowrap;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transition: transform 0.15s;
+  transition: transform 0.15s, opacity 0.15s;
 }
 .btn-share-copy:hover {
   transform: translateY(-1px);
+}
+.btn-share-download {
+  background: #ffffff;
+  color: #1a1a1a;
+  border: 1.5px solid rgba(0,0,0,0.15);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+.btn-share-download:hover:not(:disabled) {
+  background: #f4f1ec;
+  border-color: rgba(0,0,0,0.3);
+  transform: translateY(-1px);
+}
+.btn-share-download:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .btn-share-donate {
   background: #fff8ee;
@@ -1480,8 +1527,10 @@
   border-radius: 12px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   flex-shrink: 0;
+  white-space: nowrap;
   transition: all 0.15s ease;
   cursor: pointer;
 }

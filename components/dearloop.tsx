@@ -46,10 +46,10 @@ export function Preview({ tape, recipient = false }: { tape: Mixtape; recipient?
       {/* Show cassette + case side by side like the landing */}
       <div className="listen-cassettes">
         <div className="listen-cassette-back">
-          <CassetteCase pattern={tape.pattern} stickers={tape.stickers} songTitles={tape.tracks.map(t => t.title)} size={220} />
+          <CassetteCase pattern={tape.pattern} customPattern={tape.customPattern} stickers={tape.stickers} songTitles={tape.tracks.map(t => t.title)} size={220} />
         </div>
         <div className="listen-cassette-front">
-          <CassetteSVG pattern={tape.pattern} stickers={tape.stickers} size={240} />
+          <CassetteSVG pattern={tape.pattern} customPattern={tape.customPattern} stickers={tape.stickers} size={240} />
         </div>
       </div>
 
