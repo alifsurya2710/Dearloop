@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Dearloop — Sedikit cinta, yang terus berulang",
   description: "Rangkai mixtape kecil berisi lagu dan pesan untuk seseorang yang berarti.",
   icons: { icon: "/logo.png", shortcut: "/logo.png", apple: "/logo.png" },
-  openGraph: { title: "Dearloop — A little love, on repeat", description: "Lagu pilihanmu, pesan dari hati, dan satu mixtape penuh cerita.", type: "website" },
+  openGraph: { title: "Dearloop — Sedikit cinta, yang terus berulang", description: "Lagu pilihanmu, pesan dari hati, dan satu mixtape penuh cerita.", type: "website" },
   twitter: { card: "summary_large_image" },
 };
 

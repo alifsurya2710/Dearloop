@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { ExternalLink, Heart, ArrowLeft, Coffee } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { ExternalLink, Heart, ArrowLeft, Coffee, Download, Loader2 } from "lucide-react";
+import { toPng } from "html-to-image";
 import { Header, Footer, Preview } from "@/components/dearloop";
 import { PolaroidCard } from "@/components/cassette";
 import { MusicPlayer } from "@/components/MusicPlayer";
@@ -13,6 +14,8 @@ export default function Listen() {
   const [tape, setTape] = useState<Mixtape | null>(null);
   const [error, setError] = useState("");
   const [donateOpen, setDonateOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const downloadRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setDemo(new URLSearchParams(window.location.search).get("demo") === "true");
@@ -40,6 +43,33 @@ export default function Listen() {
     }
   }, [demo]);
 
+  async function downloadHDImage() {
+    if (!downloadRef.current || isDownloading || !tape) return;
+    try {
+      setIsDownloading(true);
+      const dataUrl = await toPng(downloadRef.current, {
+        cacheBust: true,
+        pixelRatio: 3,
+        quality: 1,
+        style: {
+          padding: "24px",
+          borderRadius: "24px",
+          background: getBgValue(tape.bgColor),
+        },
+      });
+
+      const link = document.createElement("a");
+      link.download = `${tape.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "mixtape"}-dearloop.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Gagal mengunduh gambar:", err);
+      alert("Gagal mengunduh gambar. Silakan coba lagi.");
+    } finally {
+      setIsDownloading(false);
+    }
+  }
+
   // Derive the background colour as soon as tape is available (client-only, no hydration mismatch)
   const bgValue = tape ? getBgValue(tape.bgColor) : undefined;
 
@@ -56,25 +86,29 @@ export default function Listen() {
           </div>
         ) : tape ? (
           <>
-            <Preview tape={tape} recipient />
+            <div ref={downloadRef} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <Preview tape={tape} recipient />
 
-            <div className="listen-content">
-              <div className="note-photo-row">
-                <div className="listen-note-block" style={{ flex: "1 1 260px" }}>
-                  <p className="listen-eyebrow">
-                    <Heart size={11} className="inline mr-1" />
-                    CATATAN UNTUK {tape.to.toUpperCase()}
-                  </p>
-                  <p className="listen-note-text">{tape.note}</p>
-                  <p className="listen-from">Dengan sayang, {tape.from}</p>
+              <div className="listen-content">
+                <div className="note-photo-row">
+                  <div className="listen-note-block" style={{ flex: "1 1 260px" }}>
+                    <p className="listen-eyebrow">
+                      <Heart size={11} className="inline mr-1" />
+                      CATATAN UNTUK {tape.to.toUpperCase()}
+                    </p>
+                    <p className="listen-note-text">{tape.note}</p>
+                    <p className="listen-from">Dengan sayang, {tape.from}</p>
+                  </div>
+
+                  {tape.photo && (
+                    <PolaroidCard photo={tape.photo} caption={`Dari ${tape.from} ♡`} />
+                  )}
                 </div>
-
-                {tape.photo && (
-                  <PolaroidCard photo={tape.photo} caption={`Dari ${tape.from} ♡`} />
-                )}
               </div>
+            </div>
 
-              <div style={{ margin: "24px 0" }}>
+            <div className="listen-content" style={{ marginTop: "20px" }}>
+              <div style={{ margin: "12px 0 24px" }}>
                 <MusicPlayer tracks={tape.tracks} />
               </div>
 
@@ -97,16 +131,23 @@ export default function Listen() {
                 ))}
               </div>
 
-              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-                <Link href="/" className="btn-make-own" style={{ flex: 1 }}>
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+                <Link href="/" className="btn-make-own" style={{ flex: 1, justifyContent: "center" }}>
                   <ArrowLeft size={14} /> Buat mixtapemu sendiri
                 </Link>
                 <button
+                  className="btn-share-download"
+                  onClick={downloadHDImage}
+                  disabled={isDownloading}
+                >
+                  {isDownloading ? <Loader2 size={15} className="spin" /> : <Download size={15} />}
+                  {isDownloading ? "Mengunduh..." : "Unduh HD"}
+                </button>
+                <button
                   className="btn-share-donate"
-                  style={{ borderRadius: "12px", padding: "12px 20px" }}
                   onClick={() => setDonateOpen(true)}
                 >
-                  <Coffee size={15} /> Dukung / Donasi
+                  <Coffee size={15} /> Donasi
                 </button>
               </div>
             </div>

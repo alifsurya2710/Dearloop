@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
-import { Check, X, Copy, ExternalLink, Loader2, Camera, Upload, Image as ImageIcon, Coffee } from "lucide-react";
+import { Check, X, Copy, ExternalLink, Loader2, Camera, Upload, Image as ImageIcon, Coffee, Download } from "lucide-react";
+import { toPng } from "html-to-image";
 import { CassetteSVG, CassetteCase, Notecard, PolaroidCard } from "@/components/cassette";
 import { MusicPlayer } from "@/components/MusicPlayer";
 import { DonationModal } from "@/components/DonationModal";
@@ -657,6 +658,38 @@ function StepShare({ tape, share, onCopy, copied, onReset }: {
   onReset: () => void;
 }) {
   const [donateOpen, setDonateOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  async function downloadHDImage() {
+    if (!previewRef.current || isDownloading) return;
+    try {
+      setIsDownloading(true);
+      // Generate HD PNG image with pixelRatio: 3
+      const dataUrl = await toPng(previewRef.current, {
+        cacheBust: true,
+        pixelRatio: 3,
+        quality: 1,
+        style: {
+          transform: "scale(1)",
+          transformOrigin: "top left",
+          padding: "24px",
+          borderRadius: "24px",
+          background: getBgValue(tape.bgColor),
+        },
+      });
+
+      const link = document.createElement("a");
+      link.download = `${tape.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "mixtape"}-dearloop.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Gagal mengunduh gambar:", err);
+      alert("Gagal mengunduh gambar. Silakan coba lagi.");
+    } finally {
+      setIsDownloading(false);
+    }
+  }
 
   return (
     <div className="step-content">
@@ -664,7 +697,7 @@ function StepShare({ tape, share, onCopy, copied, onReset }: {
 
       <div className="share-result-container">
         {/* Clean layout: Note card & Polaroid photo side-by-side, Cassette Case below */}
-        <div className="result-preview-stage">
+        <div className="result-preview-stage" ref={previewRef}>
           <div className="result-notes-row">
             <Notecard message={tape.note || "Untukmu ♡"} />
             {tape.photo && (
@@ -684,7 +717,7 @@ function StepShare({ tape, share, onCopy, copied, onReset }: {
         {/* Music Player Widget */}
         <MusicPlayer tracks={tape.tracks} />
 
-        {/* Share Link Input + Donasi Button */}
+        {/* Share Link Input + Action Buttons */}
         <div className="share-section">
           <label className="share-section-label">Share this mixtape:</label>
           <div className="share-input-row">
@@ -697,6 +730,10 @@ function StepShare({ tape, share, onCopy, copied, onReset }: {
             <button className="btn-share-copy" onClick={onCopy}>
               <Copy size={14} />
               {copied ? "Tersalin!" : "Copy"}
+            </button>
+            <button className="btn-share-download" onClick={downloadHDImage} disabled={isDownloading}>
+              {isDownloading ? <Loader2 size={14} className="spin" /> : <Download size={14} />}
+              {isDownloading ? "Mengunduh..." : "Unduh HD"}
             </button>
             <button className="btn-share-donate" onClick={() => setDonateOpen(true)}>
               <Coffee size={14} />
