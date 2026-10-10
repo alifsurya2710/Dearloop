@@ -19,36 +19,13 @@ export function DonationModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
     }
   }
 
-  // Smart Deep Link function without forcing Play Store
+  // Simple Deep Link function
   function handleDeepLink(app: "dana" | "gopay") {
-    const isAndroid = /android/i.test(navigator.userAgent);
-    
-    let url = "";
     if (app === "dana") {
-      if (isAndroid) {
-        url = `intent://transfer?destination=${DONATION_NUMBER}#Intent;scheme=dana;end`;
-      } else {
-        url = `dana://transfer?destination=${DONATION_NUMBER}`;
-      }
+      window.location.href = `dana://transfer?destination=${DONATION_NUMBER}`;
     } else if (app === "gopay") {
-      if (isAndroid) {
-        url = `intent://transfer?phone=${DONATION_NUMBER}#Intent;scheme=gopay;end`;
-      } else {
-        url = `gopay://transfer?phone=${DONATION_NUMBER}`;
-      }
-    }
-
-    // Attempt to open
-    window.location.href = url;
-
-    // Fallback if not opened within 2 seconds
-    if (!isAndroid) {
-      const fallbackUrl = app === "dana" ? "https://link.dana.id" : "https://gopay.co.id/";
-      setTimeout(() => {
-        if (!document.hidden) {
-          window.open(fallbackUrl, "_blank", "noopener,noreferrer");
-        }
-      }, 2000);
+      // Use gopay:// to target the standalone GoPay app instead of Gojek
+      window.location.href = `gopay://transfer?phone=${DONATION_NUMBER}`;
     }
   }
 
