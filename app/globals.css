@@ -1595,22 +1595,73 @@
   animation: pulse 1.2s infinite ease-in-out;
 }
 
-/* Clean non-overlapping result preview stage */
-.result-preview-stage {
+/* Share visible UI (step 4 screen) */
+.share-visible-preview {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   width: 100%;
 }
-.result-notes-row {
+
+.share-cassettes-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+.share-title-block {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.share-link-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  align-items: center;
+}
+
+.share-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  width: 100%;
+}
+
+.btn-share-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 6px;
   width: 100%;
+  padding: 11px 16px;
+  background: #f5f2ee;
+  color: #333;
+  border: 1.5px solid rgba(0,0,0,0.12);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  text-decoration: none;
 }
+.btn-share-open:hover {
+  background: #eae7e2;
+  border-color: rgba(0,0,0,0.22);
+  transform: translateY(-1px);
+}
+
+.share-reset-btn {
+  width: 100%;
+  justify-content: center;
+}
+
 .result-cassette-box {
   margin-top: -10px;
   filter: drop-shadow(0 8px 20px rgba(0,0,0,0.15));
@@ -1767,6 +1818,33 @@
     max-width: 100%;
     padding: 16px 12px;
   }
+  /* Share screen mobile */
+  .share-visible-preview {
+    gap: 16px;
+  }
+  .share-cassettes-wrap {
+    overflow: visible;
+  }
+  .listen-cassettes {
+    transform: scale(0.85);
+    transform-origin: center center;
+  }
+  .share-actions-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .share-link-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .share-link-row .share-url-input {
+    width: 100%;
+  }
+  .share-link-row .btn-share-copy {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+  }
+  /* Old share styles */
   .share-input-row {
     flex-direction: column;
     gap: 8px;
@@ -1830,6 +1908,19 @@
   }
   .listen-cassettes {
     width: 280px;
+    transform: scale(0.8);
+    transform-origin: center center;
+  }
+  .share-cassettes-wrap {
+    height: 180px;
+  }
+  .share-actions-grid {
+    grid-template-columns: 1fr;
+  }
+  .btn-share-download, .btn-share-donate {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
   }
   .listen-main {
     padding: 16px 10px 40px;

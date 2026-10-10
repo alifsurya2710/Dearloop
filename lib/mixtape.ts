@@ -188,11 +188,17 @@ export const initialMixtape: Mixtape = {
 
 export function encodeMixtape(tape: Mixtape) {
   const bytes = new TextEncoder().encode(JSON.stringify(mixtapeSchema.parse(tape)));
-  return btoa(Array.from(bytes, b => String.fromCharCode(b)).join(""));
+  // Use URL-safe base64: replace +→-, /→_, strip trailing =
+  const b64 = btoa(Array.from(bytes, b => String.fromCharCode(b)).join(""));
+  return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 export function decodeMixtape(value: string): Mixtape {
   if (value.length > 3000000) throw new Error("Tautan terlalu panjang.");
-  const bytes = Uint8Array.from(atob(value), c => c.charCodeAt(0));
+  // Restore standard base64 from URL-safe variant
+  const b64 = value.replace(/-/g, "+").replace(/_/g, "/");
+  // Add padding if needed
+  const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+  const bytes = Uint8Array.from(atob(padded), c => c.charCodeAt(0));
   return mixtapeSchema.parse(JSON.parse(new TextDecoder().decode(bytes)));
 }
