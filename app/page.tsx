@@ -924,6 +924,7 @@ export default function Home() {
   const [share, setShare]       = useState("");
   const [copied, setCopied]     = useState(false);
   const [error, setError]       = useState("");
+  const [isDonationOpen, setIsDonationOpen] = useState(false);
 
   function update<K extends keyof Mixtape>(key: K, value: Mixtape[K]) {
     setTape(prev => ({ ...prev, [key]: value }));
@@ -1010,8 +1011,18 @@ export default function Home() {
             >
               Alif Surya
             </a>
+            <span style={{ margin: "0 8px", opacity: 0.5 }}>·</span>
+            <button 
+              onClick={() => setIsDonationOpen(true)}
+              className="creator-link"
+              style={{ display: "inline-flex", alignItems: "center", cursor: "pointer", background: "none", border: "none", padding: 0, font: "inherit", color: "inherit" }}
+            >
+              <Coffee size={10} style={{ marginRight: "4px" }} />
+              Dukung
+            </button>
           </span>
         </footer>
+        <DonationModal isOpen={isDonationOpen} onClose={() => setIsDonationOpen(false)} />
       </div>
     );
   }

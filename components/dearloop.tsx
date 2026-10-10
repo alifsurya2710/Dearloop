@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
-import { Heart, Music } from "lucide-react";
+import { useState } from "react";
+import { Heart, Music, Coffee } from "lucide-react";
 import { CassetteSVG, CassetteCase } from "@/components/cassette";
 import type { Mixtape } from "@/lib/mixtape";
+import { DonationModal } from "./DonationModal";
 
 export function Header() {
   return (
@@ -15,21 +17,35 @@ export function Header() {
 }
 
 export function Footer() {
+  const [isDonationOpen, setIsDonationOpen] = useState(false);
+
   return (
-    <footer className="listen-footer">
-      <span>© 2026 Dearloop</span>
-      <span>
-        Dibuat dengan <Heart className="inline mx-1 text-rose-500 fill-rose-500" size={10} /> oleh{" "}
-        <a
-          href="https://www.instagram.com/mochalifsurya/?__pwa=1#"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="creator-link"
-        >
-          Alif Surya
-        </a>
-      </span>
-    </footer>
+    <>
+      <footer className="listen-footer">
+        <span>© 2026 Dearloop</span>
+        <span>
+          Dibuat dengan <Heart className="inline mx-1 text-rose-500 fill-rose-500" size={10} /> oleh{" "}
+          <a
+            href="https://www.instagram.com/mochalifsurya/?__pwa=1#"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="creator-link"
+          >
+            Alif Surya
+          </a>
+          <span style={{ margin: "0 8px", opacity: 0.5 }}>·</span>
+          <button 
+            onClick={() => setIsDonationOpen(true)}
+            className="creator-link"
+            style={{ display: "inline-flex", alignItems: "center", cursor: "pointer", background: "none", border: "none", padding: 0, font: "inherit", color: "inherit" }}
+          >
+            <Coffee size={10} style={{ marginRight: "4px" }} />
+            Dukung
+          </button>
+        </span>
+      </footer>
+      <DonationModal isOpen={isDonationOpen} onClose={() => setIsDonationOpen(false)} />
+    </>
   );
 }
 
