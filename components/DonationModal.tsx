@@ -19,6 +19,41 @@ export function DonationModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
     }
   }
 
+  // Smart Deep Link function
+  function handleDeepLink(app: "dana" | "gopay") {
+    const isAndroid = /android/i.test(navigator.userAgent);
+    
+    let url = "";
+    if (app === "dana") {
+      if (isAndroid) {
+        url = `intent://transfer?destination=${DONATION_NUMBER}#Intent;scheme=dana;package=id.dana;end`;
+      } else {
+        // iOS or others
+        url = `dana://transfer?destination=${DONATION_NUMBER}`;
+      }
+    } else if (app === "gopay") {
+      if (isAndroid) {
+        url = `intent://gopay/transfer?phone=${DONATION_NUMBER}#Intent;scheme=gojek;package=com.gojek.app;end`;
+      } else {
+        // iOS or others
+        url = `gojek://gopay/transfer?phone=${DONATION_NUMBER}`;
+      }
+    }
+
+    // Attempt to open
+    window.location.href = url;
+
+    // Fallback if not opened within 2 seconds (for non-Android platforms where intent isn't supported)
+    if (!isAndroid) {
+      const fallbackUrl = app === "dana" ? "https://link.dana.id" : "https://www.gojek.com/gopay/";
+      setTimeout(() => {
+        if (!document.hidden) {
+          window.open(fallbackUrl, "_blank", "noopener,noreferrer");
+        }
+      }, 2000);
+    }
+  }
+
   return (
     <div className="camera-modal-backdrop" onClick={onClose}>
       <div
@@ -54,12 +89,12 @@ export function DonationModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
               {copiedField === "DANA" ? <Check size={13} /> : <Copy size={13} />}
               {copiedField === "DANA" ? "Tersalin!" : "Salin Nomor"}
             </button>
-            <a
-              href={`dana://transfer?destination=${DONATION_NUMBER}`}
+            <button
+              onClick={() => handleDeepLink("dana")}
               className="btn-donation-action btn-open-app dana-btn"
             >
               <ExternalLink size={13} /> Buka DANA
-            </a>
+            </button>
           </div>
         </div>
 
@@ -77,12 +112,12 @@ export function DonationModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
               {copiedField === "GoPay" ? <Check size={13} /> : <Copy size={13} />}
               {copiedField === "GoPay" ? "Tersalin!" : "Salin Nomor"}
             </button>
-            <a
-              href={`gojek://gopay/transfer?phone=${DONATION_NUMBER}`}
+            <button
+              onClick={() => handleDeepLink("gopay")}
               className="btn-donation-action btn-open-app gopay-btn"
             >
               <ExternalLink size={13} /> Buka GoPay
-            </a>
+            </button>
           </div>
         </div>
 

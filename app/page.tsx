@@ -822,10 +822,8 @@ function StepShare({ tape, share, onCopy, copied, onReset }: {
 
           {/* Music Player & Tracklist Card */}
           <div className="listen-content" style={{ borderRadius: "22px", padding: "24px", boxShadow: "0 8px 24px rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.04)" }}>
-            <MusicPlayer tracks={tape.tracks} />
-
-            <h2 className="listen-songs-heading" style={{ marginTop: "20px" }}>{tape.title}</h2>
-            <div className="listen-songs">
+            <h2 className="listen-songs-heading" style={{ margin: 0 }}>{tape.title}</h2>
+            <div className="listen-songs" style={{ marginTop: "20px" }}>
               {tape.tracks.map((track, i) => (
                 <div className="listen-track" key={i}>
                   <span className="listen-track-num">{String(i + 1).padStart(2, "0")}</span>
@@ -863,6 +861,11 @@ function StepShare({ tape, share, onCopy, copied, onReset }: {
         <div className="share-title-block">
           <h1 className="listen-title">{tape.title}</h1>
           <p className="listen-byline">Untuk {tape.to} &nbsp;·&nbsp; dari {tape.from}</p>
+        </div>
+
+        {/* Music Player (Visible on UI) */}
+        <div style={{ width: "100%", maxWidth: "480px", padding: "0 10px" }}>
+          <MusicPlayer tracks={tape.tracks} />
         </div>
 
         {/* Share link */}
