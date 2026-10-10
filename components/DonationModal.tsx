@@ -19,19 +19,6 @@ export function DonationModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
     }
   }
 
-  // Deep link handler: coba buka app dulu, fallback ke web jika tidak terinstall
-  function openAppWithFallback(appUrl: string, webUrl: string) {
-    const start = Date.now();
-    // Coba buka skema deep link aplikasi
-    window.location.href = appUrl;
-    // Setelah 1.5 detik, jika halaman masih aktif (artinya app tidak terbuka), buka web fallback
-    setTimeout(() => {
-      if (Date.now() - start < 2500) {
-        window.open(webUrl, "_blank", "noopener,noreferrer");
-      }
-    }, 1500);
-  }
-
   return (
     <div className="camera-modal-backdrop" onClick={onClose}>
       <div
@@ -67,16 +54,12 @@ export function DonationModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
               {copiedField === "DANA" ? <Check size={13} /> : <Copy size={13} />}
               {copiedField === "DANA" ? "Tersalin!" : "Salin Nomor"}
             </button>
-            {/* DANA deep link: dana://transfer?destination=<nomor> — fallback ke link.dana.id */}
-            <button
-              onClick={() => openAppWithFallback(
-                `dana://transfer?destination=${DONATION_NUMBER}`,
-                "https://link.dana.id"
-              )}
+            <a
+              href={`dana://transfer?destination=${DONATION_NUMBER}`}
               className="btn-donation-action btn-open-app dana-btn"
             >
               <ExternalLink size={13} /> Buka DANA
-            </button>
+            </a>
           </div>
         </div>
 
@@ -94,16 +77,12 @@ export function DonationModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
               {copiedField === "GoPay" ? <Check size={13} /> : <Copy size={13} />}
               {copiedField === "GoPay" ? "Tersalin!" : "Salin Nomor"}
             </button>
-            {/* GoPay adalah bagian Gojek — deep link: gojek://gopay/transfer?phone=<nomor> */}
-            <button
-              onClick={() => openAppWithFallback(
-                `gojek://gopay/transfer?phone=${DONATION_NUMBER}`,
-                "https://www.gojek.com/gopay/"
-              )}
+            <a
+              href={`gojek://gopay/transfer?phone=${DONATION_NUMBER}`}
               className="btn-donation-action btn-open-app gopay-btn"
             >
               <ExternalLink size={13} /> Buka GoPay
-            </button>
+            </a>
           </div>
         </div>
 

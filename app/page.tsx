@@ -739,7 +739,6 @@ function StepShare({ tape, share, onCopy, copied, onReset }: {
         pixelRatio: 3,
         quality: 1,
         fontEmbedCSS: "",
-        width: 420,
         filter: (node) => {
           if (node.tagName === "LINK" && (node as HTMLLinkElement).rel === "stylesheet") {
             return false;
@@ -772,80 +771,75 @@ function StepShare({ tape, share, onCopy, copied, onReset }: {
       <div style={{ position: "absolute", left: "-9999px", top: 0, pointerEvents: "none", zIndex: -1 }}>
         <div
           ref={downloadRef}
-          style={{
-            width: "420px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "20px",
-            padding: "36px 28px 44px",
-            borderRadius: "28px",
-            background: bgValue,
-            fontFamily: "DM Sans, sans-serif",
-          }}
+          className="result-preview-stage"
+          style={{ display: "flex", flexDirection: "column", gap: "24px", width: "480px", margin: "0 auto", padding: "36px 24px 44px", borderRadius: "28px", background: bgValue }}
         >
           {/* Header Tag */}
-          <div style={{ textAlign: "center" }}>
-            <p style={{ margin: 0, fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, color: "rgba(0,0,0,0.6)" }}>
-              ♡ SEBUAH HADIAH KECIL UNTUK {tape.to.toUpperCase()}
+          <div style={{ textAlign: "center", marginBottom: "4px" }}>
+            <p className="listen-tag" style={{ margin: 0, fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, color: "rgba(0,0,0,0.6)" }}>
+              <Heart size={11} className="inline mr-1" /> SEBUAH HADIAH KECIL UNTUK {tape.to.toUpperCase()}
             </p>
           </div>
 
-          {/* Double Cassette */}
-          <div style={{ width: "100%", height: "220px", display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
-            <div style={{ position: "relative", width: "320px", height: "220px", filter: "drop-shadow(0 12px 28px rgba(0,0,0,0.18))" }}>
-              <div style={{ position: "absolute", top: "10px", right: 0, zIndex: 1, transform: "rotate(5deg)" }}>
-                <CassetteCase pattern={tape.pattern} customPattern={tape.customPattern} stickers={tape.stickers} songTitles={tape.tracks.map(t => t.title)} size={200} />
+          {/* Double Cassette Feature Container (Fixed height box preventing any overlap) */}
+          <div style={{ width: "100%", height: "230px", display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
+            <div className="listen-cassettes" style={{ filter: "drop-shadow(0 12px 28px rgba(0,0,0,0.18))" }}>
+              <div className="listen-cassette-back">
+                <CassetteCase pattern={tape.pattern} customPattern={tape.customPattern} stickers={tape.stickers} songTitles={tape.tracks.map(t => t.title)} size={220} />
               </div>
-              <div style={{ position: "absolute", bottom: 0, left: 0, zIndex: 2, transform: "rotate(-6deg)" }}>
-                <CassetteSVG pattern={tape.pattern} customPattern={tape.customPattern} stickers={tape.stickers} size={220} />
+              <div className="listen-cassette-front">
+                <CassetteSVG pattern={tape.pattern} customPattern={tape.customPattern} stickers={tape.stickers} size={240} />
               </div>
             </div>
           </div>
 
-          {/* Title & Byline */}
-          <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: "6px" }}>
-            <h1 style={{ fontSize: "26px", fontWeight: 800, margin: 0, letterSpacing: "-0.5px", lineHeight: "1.3", color: "#1a1a1a", fontFamily: "DM Sans, sans-serif" }}>{tape.title}</h1>
-            <p style={{ fontSize: "13px", color: "rgba(0,0,0,0.6)", margin: 0, fontWeight: 500 }}>
+          {/* Title & Byline Block (Explicit spacing, crisp typography) */}
+          <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: "6px", width: "100%", padding: "8px 0 4px" }}>
+            <h1 className="listen-title" style={{ fontSize: "28px", fontWeight: 800, margin: 0, letterSpacing: "-0.5px", lineHeight: "1.35", color: "#1a1a1a" }}>{tape.title}</h1>
+            <p className="listen-byline" style={{ fontSize: "13.5px", color: "rgba(0,0,0,0.6)", margin: 0, fontWeight: 500 }}>
               Untuk {tape.to} &nbsp;·&nbsp; dari {tape.from}
             </p>
           </div>
 
-          {/* Note Card & Polaroid */}
-          <div style={{ background: "rgba(255,255,255,0.92)", borderRadius: "18px", padding: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
-            <p style={{ margin: 0, fontSize: "9px", letterSpacing: "1.5px", fontWeight: 700, color: "#888", textTransform: "uppercase" }}>
-              ♡ CATATAN UNTUK {tape.to.toUpperCase()}
-            </p>
-            <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
-              <p style={{ fontFamily: "Caveat, cursive", fontSize: "19px", margin: 0, lineHeight: "1.45", color: "#1a1a1a", flex: 1 }}>{tape.note || "Untukmu ♡"}</p>
-              {tape.photo && (
-                <div style={{ background: "#fff", padding: "8px 8px 20px", borderRadius: "3px", boxShadow: "0 4px 12px rgba(0,0,0,0.15)", transform: "rotate(-3deg)", flexShrink: 0 }}>
-                  <div style={{ width: "100px", height: "100px", overflow: "hidden" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={tape.photo} alt="Foto" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                  </div>
-                  <p style={{ fontFamily: "Caveat, cursive", fontSize: "12px", color: "#444", textAlign: "center", marginTop: "6px" }}>Dari {tape.from} ♡</p>
-                </div>
-              )}
-            </div>
-            <p style={{ margin: 0, fontSize: "12px", color: "#666", fontWeight: 500 }}>Dengan sayang, {tape.from}</p>
-          </div>
-
-          {/* Tracklist */}
-          <div style={{ background: "rgba(255,255,255,0.92)", borderRadius: "18px", padding: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
-            <p style={{ margin: 0, fontSize: "11px", fontWeight: 700, letterSpacing: "0.5px", color: "#1a1a1a" }}>{tape.title}</p>
-            {tape.tracks.map((track, i) => (
-              <div key={i} style={{ display: "flex", gap: "10px", alignItems: "center", padding: "8px 0", borderBottom: i < tape.tracks.length - 1 ? "1px solid rgba(0,0,0,0.07)" : "none" }}>
-                <span style={{ fontSize: "10px", color: "#999", minWidth: "20px" }}>{String(i + 1).padStart(2, "0")}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <strong style={{ display: "block", fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{track.title}</strong>
-                  {track.artist && <small style={{ display: "block", fontSize: "10px", color: "#888" }}>{track.artist}</small>}
+          {/* Note Card & Polaroid Row */}
+          <div className="listen-content" style={{ borderRadius: "22px", padding: "24px", boxShadow: "0 8px 24px rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.04)" }}>
+            <div className="note-photo-row" style={{ margin: 0, gap: "20px", alignItems: "flex-start" }}>
+              <div className="listen-note-block" style={{ flex: "1 1 200px", display: "flex", flexDirection: "column", gap: "10px", minWidth: 0 }}>
+                <p className="listen-eyebrow" style={{ fontSize: "9.5px", letterSpacing: "1.5px", margin: 0, color: "#888" }}>
+                  <Heart size={11} className="inline mr-1" /> CATATAN UNTUK {tape.to.toUpperCase()}
+                </p>
+                <p className="listen-note-text" style={{ fontSize: "20px", margin: 0, lineHeight: "1.45", color: "#1a1a1a" }}>{tape.note || "Untukmu ♡"}</p>
+                <div style={{ marginTop: "4px" }}>
+                  <p className="listen-from" style={{ margin: 0, fontSize: "13px", color: "#666", fontWeight: 500 }}>Dengan sayang, {tape.from}</p>
                 </div>
               </div>
-            ))}
+
+              {tape.photo && (
+                <PolaroidCard photo={tape.photo} caption={`Dari ${tape.from} ♡`} />
+              )}
+            </div>
           </div>
 
+          {/* Music Player & Tracklist Card */}
+          <div className="listen-content" style={{ borderRadius: "22px", padding: "24px", boxShadow: "0 8px 24px rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.04)" }}>
+            <MusicPlayer tracks={tape.tracks} />
+
+            <h2 className="listen-songs-heading" style={{ marginTop: "20px" }}>{tape.title}</h2>
+            <div className="listen-songs">
+              {tape.tracks.map((track, i) => (
+                <div className="listen-track" key={i}>
+                  <span className="listen-track-num">{String(i + 1).padStart(2, "0")}</span>
+                  <div className="listen-track-info">
+                    <strong>{track.title}</strong>
+                    {track.artist && <small>{track.artist}</small>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
           {/* Footer watermark */}
-          <p style={{ textAlign: "center", fontSize: "10px", color: "rgba(0,0,0,0.35)", margin: 0, letterSpacing: "0.5px" }}>
+          <p style={{ textAlign: "center", fontSize: "12px", color: "rgba(0,0,0,0.4)", margin: "8px 0 0", letterSpacing: "1px" }}>
             dearloop.vercel.app
           </p>
         </div>
