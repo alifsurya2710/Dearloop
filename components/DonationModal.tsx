@@ -22,7 +22,8 @@ export function DonationModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
   // Simple Deep Link function
   function handleDeepLink(app: "dana" | "gopay") {
     if (app === "dana") {
-      window.location.href = `dana://transfer?destination=${DONATION_NUMBER}`;
+      // DANA's official custom URL scheme is danaid://
+      window.location.href = `danaid://`;
     } else if (app === "gopay") {
       // Use gopay:// to target the standalone GoPay app instead of Gojek
       window.location.href = `gopay://transfer?phone=${DONATION_NUMBER}`;
