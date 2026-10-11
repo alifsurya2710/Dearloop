@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   icons: { icon: "/logo.png", shortcut: "/logo.png", apple: "/logo.png" },
   openGraph: { title: "Dearloop — Sedikit cinta, yang terus berulang", description: "Lagu pilihanmu, pesan dari hati, dan satu mixtape penuh cerita.", type: "website" },
   twitter: { card: "summary_large_image" },
+  verification: {
+    google: "google59b52f59ab64ac0f",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
